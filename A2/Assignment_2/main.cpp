@@ -307,6 +307,8 @@ int main(int argc, char *argv[])
     // YOUR CODE HERE:
     // Create some shaders
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    buildShader(GL_VERTEX_SHADER, "eyes.vs.glsl", shaders[0]);
+    shaderProgram[3] = buildProgram(2, shaders);
 
     // bind shader program
     w_state->setProgram(0, shaderProgram[0]);
