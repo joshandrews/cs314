@@ -185,14 +185,14 @@ void display()
         glm::mat4 scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.05f));
         
         // Rotation matrix calculation - similar to lookAt from lecture
-        glm::vec3 y = glm::normalize(gem_position - Leye_pos);
-        glm::vec3 x = glm::normalize(glm::cross(glm::vec3(0.0f,1.0f,0.0f), y));
-        glm::vec3 z = glm::normalize(glm::cross(y, x));
-        glm::mat4 rotMatrix = glm::mat4(glm::vec4(x,0.0f),glm::vec4(y,0.0f),glm::vec4(z,0.0f),glm::vec4(0.0f,0.0f,0.0f,1.0f));
+        glm::vec3 l_y = glm::normalize(gem_position - Leye_pos);
+        glm::vec3 l_x = glm::normalize(glm::cross(glm::vec3(0.0f,1.0f,0.0f), l_y));
+        glm::vec3 l_z = glm::normalize(glm::cross(l_y, l_x));
+        glm::mat4 l_rotMatrix = glm::mat4(glm::vec4(l_x,0.0f),glm::vec4(l_y,0.0f),glm::vec4(l_z,0.0f),glm::vec4(0.0f,0.0f,0.0f,1.0f));
         
 
         // Translation Matrix
-        glm::mat4 transMatrix = glm::translate(glm::mat4(1.0f), Leye_pos);
+        glm::mat4 l_transMatrix = glm::translate(glm::mat4(1.0f), Leye_pos);
         //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         // YOUR CODE HERE
         // calculate rotation of eyes (hint: Rodrigues' formula)
@@ -201,8 +201,8 @@ void display()
 
         // load values into shader
 
-        glm::mat4 transRotScale = transMatrix*rotMatrix*scalingMatrix;
-        glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "transRotScale"), 1, false, glm::value_ptr(transRotScale));
+        glm::mat4 l_transRotScale = l_transMatrix*l_rotMatrix*scalingMatrix;
+        glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "transRotScale"), 1, false, glm::value_ptr(l_transRotScale));
         glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "gem_pos"), 1, glm::value_ptr(gem_position));
         glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "eye_pos"), 1, glm::value_ptr(Leye_pos));
 
@@ -216,9 +216,23 @@ void display()
         // calculate rotation of eyes (hint: Rodrigues' formula)
 	    // find the rotation of the right eye and load into the shader
         //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        
+        // Rotation matrix calculation - similar to lookAt from lecture
+        glm::vec3 r_y = glm::normalize(gem_position - Reye_pos);
+        glm::vec3 r_x = glm::normalize(glm::cross(glm::vec3(0.0f,1.0f,0.0f), r_y));
+        glm::vec3 r_z = glm::normalize(glm::cross(r_y, r_x));
+        glm::mat4 r_rotMatrix = glm::mat4(glm::vec4(r_x,0.0f),glm::vec4(r_y,0.0f),glm::vec4(r_z,0.0f),glm::vec4(0.0f,0.0f,0.0f,1.0f));
+        
 
+        // Translation Matrix
+        glm::mat4 r_transMatrix = glm::translate(glm::mat4(1.0f), Reye_pos);
+        
+        glm::mat4 r_transRotScale = r_transMatrix*r_rotMatrix*scalingMatrix;
+        
+        glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "transRotScale"), 1, false, glm::value_ptr(r_transRotScale));
         glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "eye_pos"), 1, glm::value_ptr(Reye_pos));
-
+       
+        w_state->loadTransforms();
         g_eye->drawMesh();
 
         if (c_state.mode == MODE_LASERS)
@@ -228,16 +242,32 @@ void display()
             glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "gem_pos"), 1, glm::value_ptr(gem_position));
             glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "eye_pos"), 1, glm::value_ptr(Leye_pos));
 	        
+            // For Left Eye!
+            float l_distance = glm::distance(gem_position, Leye_pos);
+
+            glm::mat4 ll_scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, fabs(l_distance), 0.25f));
+            
+            glm::mat4 ll_transRotScale = l_transMatrix*l_rotMatrix*ll_scalingMatrix;
+            
             //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
             // YOUR CODE HERE-ISH:
             // apply the same rotations to both lasers
             //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+            glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "transRotScale"), 1, false, glm::value_ptr(ll_transRotScale));
 
             w_state->loadTransforms();
             w_state->loadLights();
             w_state->loadColorMaterial(glm::vec4(1, 0, 1, 1));
             g_axis->drawMesh();
 
+            // For Right Eye!
+            float r_distance = glm::distance(gem_position, Reye_pos);
+            glm::mat4 lr_scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, fabs(r_distance), 0.25f));
+            
+            glm::mat4 lr_transRotScale = r_transMatrix*r_rotMatrix*lr_scalingMatrix;
+
+            glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "transRotScale"), 1, false, glm::value_ptr(lr_transRotScale));
             glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "eye_pos"), 1, glm::value_ptr(Reye_pos));
 	        w_state->loadColorMaterial(glm::vec4(1, 0, 1, 1));
             g_axis->drawMesh();
@@ -324,6 +354,9 @@ int main(int argc, char *argv[])
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     buildShader(GL_VERTEX_SHADER, "eyes.vs.glsl", shaders[0]);
     shaderProgram[3] = buildProgram(2, shaders);
+
+    buildShader(GL_VERTEX_SHADER, "lasers.vs.glsl", shaders[0]);
+    shaderProgram[4] = buildProgram(2, shaders);
 
     // bind shader program
     w_state->setProgram(0, shaderProgram[0]);
