@@ -27,6 +27,7 @@ uniform mat4 ModelViewMatrix;
 uniform mat3 NormalMatrix;      // we keep a MV matrix without the translation component to apply to vectors
 uniform mat4 ProjectionMatrix;
 uniform mat4 MVP;               // ModelViewProjection Matrix
+uniform mat4 rotInFrame;               // Rotation in frame for head
 
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 // YOUR CODE HERE
@@ -42,6 +43,10 @@ void main()
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   // YOUR CODE HERE
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-  gl_Position = MVP * Position; // REPLACE ME
+  if (Position.x > 0 && Position.y > 1 && Position.z > -0.3) {
+      gl_Position = MVP * rotInFrame * Position;
+  }
+  else {
+      gl_Position = MVP * Position;
+  }
 }

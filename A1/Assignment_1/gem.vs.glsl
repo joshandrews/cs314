@@ -38,5 +38,5 @@ void main()
     /**********************************
      * Your Code Goes Here
      **********************************/
-    gl_Position = MVP * vec4(Position, 1.0); // REPLACE ME
+    gl_Position = MVP * vec4(Position + gem_pos, 1.0);
 }

@@ -63,7 +63,10 @@ glm::mat4 N = glm::mat4( 1.0, 0.0, 0.0, 0.0,
                          0.0, 1.0, -0.3, 1);
 
 // the rotation of the head with repect to the neck
-glm::mat4 H;
+glm::mat4 H = glm::mat4( 1.0, 0.0, 0.0, 0.0,
+                         0.0, 1.0, 0.0, 0.0,
+                         0.0, 0.0, 1.0, 0.0, 
+                         0.0, 0.0, 0.0, 1);
 
 // the display loop, where all of the code that actually
 // changes what you see goes
@@ -166,8 +169,12 @@ void display()
     // calculate rotations into H (using head_rot_X)
     // load H and N into shader
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
+    float rot_in_degrees = head_rot_X*180/M_PI;
+    H = glm::rotate(H,rot_in_degrees,glm::vec3(1.0f,0.0f,0.0f));
+    glm::mat4 rotInFrame = N*H*glm::inverse(N);
+    
     glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "gem_pos"), 1, glm::value_ptr(gem_position));
+    glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "rotInFrame"), 1, false, glm::value_ptr(rotInFrame));
 
     w_state->loadTransforms();
     w_state->loadMaterials();
@@ -232,7 +239,6 @@ void display()
         glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "transRotScale"), 1, false, glm::value_ptr(r_transRotScale));
         glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "eye_pos"), 1, glm::value_ptr(Reye_pos));
        
-        w_state->loadTransforms();
         g_eye->drawMesh();
 
         if (c_state.mode == MODE_LASERS)
@@ -245,7 +251,7 @@ void display()
             // For Left Eye!
             float l_distance = glm::distance(gem_position, Leye_pos);
 
-            glm::mat4 ll_scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, fabs(l_distance), 0.25f));
+            glm::mat4 ll_scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, l_distance, 0.25f));
             
             glm::mat4 ll_transRotScale = l_transMatrix*l_rotMatrix*ll_scalingMatrix;
             
@@ -263,7 +269,7 @@ void display()
 
             // For Right Eye!
             float r_distance = glm::distance(gem_position, Reye_pos);
-            glm::mat4 lr_scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, fabs(r_distance), 0.25f));
+            glm::mat4 lr_scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, r_distance, 0.25f));
             
             glm::mat4 lr_transRotScale = r_transMatrix*r_rotMatrix*lr_scalingMatrix;
 

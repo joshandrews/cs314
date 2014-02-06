@@ -17,10 +17,17 @@
  * University of British Columbia
  */
 
+/* == ControlState.h ==
+ * State and functions that operate on user input, window management,
+ * or other functionality outside of the domain of OpenGL
+ *
+ */
+
 #ifndef CONTROL_STATE_H
 #define CONTROL_STATE_H
 
 #include "WorldState.h"
+#include <time.h>
 
 /* due to GLFW/glut/most windowing systems being c based it is infeasible to store 
  * all the control state within our class and pass member function pointers (the c 
@@ -29,8 +36,13 @@
  */
 #define DEGREES_PER_SECOND 100
 #define DEPTH_PER_SECOND 3
-#define STEP_PER_SECOND 0.01f
+#define STEP_PER_SECOND 0.002f
 
+/** 
+ * This class is responsible for all the interaction outside of GL,
+ * which includes all of the window manager functionality (GLUT, GLFW)
+ * such as inputs, window resizing, etc, as well as all all related state.
+ */
 class ControlState
 {
 public:
@@ -58,14 +70,17 @@ public:
     int height;
     int width;
 
-    // window that this control state is for
-    GLFWwindow* window;
+    //frame timer
+    clock_t time;
+    double  ellapsed_time;
+
     WorldState* w;
 
     //program specific control scheme
     glm::vec3 gemMove;
     float gemRadius;
-
+	float armBlow;
+	
     ControlState()
         : viewTheta(0),
           viewPhi(0),
@@ -74,8 +89,9 @@ public:
           arrU(0), arrD(0),
           mouseX(0), mouseY(0),
           mouseBtnL(0), mouseBtnC(0),
-          mouseBtnR(0),
-          window(NULL), w(NULL)
+          mouseBtnR(0), w(NULL),
+          ellapsed_time(0),
+          time(clock())
     {}
 
     ~ControlState();
@@ -95,18 +111,25 @@ public:
     void viewportFull()
     {glViewport(0, 0, width, height);}
 
+    void resetTimer();
+    double queryTimer();
+
     int deltaArrLR();
     int deltaArrUD();
     void updateView(float dTheta, float dPhi, float dDepth);
 };
 extern ControlState c_state;
 
-/* GLFW callback funtions */
-static void error_callback(int error, const char* desc);
-static void reshape_callback(GLFWwindow* win, int w, int h);
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
-static void mouseBtn_callback(GLFWwindow* win, int button, int action, int mod);
-static void mousePos_callback(GLFWwindow* win, double x, double y);
-static void mouseScroll_callback(GLFWwindow* win, double x_offset, double y_offset);
+extern void printHelp();
+
+/* GLUT callback funtions */
+static void idle_callback();
+static void reshape_callback(int w, int h);
+static void key_callback(unsigned char key, int x, int y);
+static void keyUp_callback(unsigned char key, int x, int y);
+static void skey_callback(int key, int x, int y);
+static void skeyUp_callback(int key, int x, int y);
+static void mouseBtn_callback(int button, int state, int x, int y);
+static void mousePos_callback(int x, int y);
 
 #endif // CONTROL_STATE_H

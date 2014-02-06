@@ -1,6 +1,6 @@
 
 CC = g++
-LFLAGS = -lglfw3 -framework IOKit -framework OpenGL -framework GLUT -framework Cocoa -lGLEW -L /Users/joshandrews/Documents/UBC\ Year\ 3/UBC\ Semester\ 2/CPSC\ 314/Libs/glew-1.10.0/lib -I/Users/joshandrews/Documents/UBC\ Year\ 3/UBC\ Semester\ 2/CPSC\ 314/Libs/glm -I/Users/joshandrews/Documents/UBC\ Year\ 3/UBC\ Semester\ 2/CPSC\ 314/Libs/glew-1.10.0/include -I/Users/joshandrews/Documents/UBC\ Year\ 3/UBC\ Semester\ 2/CPSC\ 314/Libs/freeglut-2.8.1/include
+LFLAGS = -lGL -lglut -lGLEW -I/home/m/m1e8/Desktop/glm
 CFLAGS = -g $(LFLAGS)
 
 BIN = a1_shaderIntro

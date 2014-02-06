@@ -17,17 +17,15 @@
  * University of British Columbia
  */
 
-#define GLFW_INCLUDE_GLU
-
 #ifdef _WIN32
 #  include "GL/glew.h"
-#  include "GLFW/glfw3.h"
+#  include "GL/freeglut.h"
 # elif __APPLE__
 #  include <GL/glew.h>
-#  include <GLFW/glfw3.h>
+#  include <GL/freeglut.h>
 #else
 #  include <GL/glew.h>
-#  include <GLFW/glfw3.h>
+#  include <GL/freeglut.h>
 #endif
 
 #include <stdio.h>
@@ -53,6 +51,7 @@ Mesh *g_gem;
 Mesh *g_axis; // NOTE: only a single axis
 float gem_radius;
 glm::vec3 gem_position;
+float amount_expl;
 
 // the display loop, where all of the code that actually
 // changes what you see goes
@@ -60,11 +59,11 @@ void display()
 {
     /* limit framerate to 60 fps */
     double curr = 0;
-    if ((curr = glfwGetTime()) < 0.016666667) // curr < ~ 1/60
+    if ((curr = c_state.queryTimer()) < 0.016666667) // curr < ~ 1/60
         return;
 
     // start counting over
-    glfwSetTime(0.0);
+    c_state.resetTimer();
 
     // Clear the buffer we will draw into.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -91,10 +90,11 @@ void display()
     w_state->modelview = glm::rotate(w_state->modelview, c_state.viewPhi, glm::vec3(1, 0, 0));
     w_state->modelview = glm::rotate(w_state->modelview, c_state.viewTheta, glm::vec3(0, 1, 0));
 
-    // update global gem position and radius
+    // update global gem position and radius and amount exploded
     gem_position += c_state.gemMove * STEP_PER_SECOND;
     gem_radius   = max(0.0f, gem_radius + c_state.gemRadius * STEP_PER_SECOND);
-
+	amount_expl += c_state.armBlow * .05;
+	
     // update gem mesh internal modelview transform matrix
     g_gem->m_MV = glm::translate(g_gem->m_MV, c_state.gemMove * STEP_PER_SECOND);
 
@@ -124,7 +124,7 @@ void display()
      ***********************************/
     w_state->useProgram(1);
     glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "gem_pos"), 1, glm::value_ptr(gem_position));
-
+	
     /* to help with knowing where the gem is in 3-space, it's color
      * changes according to which quadrant it is in
      * (+, +, +) = white,    (+, +, -) = yellow
@@ -144,14 +144,21 @@ void display()
 
     // your code here:
     // TODO: load values into shader
+	/*float dx = -1 - gem_position.x;
+    float dy = 0 - gem_position.y;
+    float dz = 0 - gem_position.z;
+    float dist = sqrt((dx*dx)+(dy*dy)+(dz*dz));
+    fprintf(stderr, "dist: %f", dist);*/
+    glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "gem_rad"), gem_radius);
+    glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "gem_pos"), 1, glm::value_ptr(gem_position));
+    glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "arm_blow"), amount_expl);
 
     w_state->loadTransforms();
     w_state->loadMaterials();
     w_state->loadLights();
     g_mesh->drawMesh();
 
-    glfwSwapBuffers(c_state.window);
-    glfwPollEvents();
+    glutSwapBuffers();
 }
 
 // setup
@@ -159,21 +166,10 @@ int main(int argc, char *argv[])
 {
     GLenum err = 0;
     /*********************************************
-     * GLFW SETUP
+     * GLUT SETUP
      *********************************************/
-    err = glfwInit();
-    if (!err)
-    {
-        fputs("Failed to load the GLFW library", stderr);
-        exit(EXIT_FAILURE);
-    }
+    glutInit(&argc, argv);
 
-    // UNCOMMENT IF USING APPLE
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    
     /*********************************************
      * STATE SETUP (initialize gl context)
      *********************************************/
@@ -182,12 +178,11 @@ int main(int argc, char *argv[])
 
     w_state = new WorldState();
     c_state.init(*w_state);
+    glutDisplayFunc(display);
 
     /*********************************************
      * GLEW SETUP
      *********************************************/
-    // UNCOMMENT IF USING APPLE
-    glewExperimental = GL_TRUE;
     err = glewInit();
     if (err != GLEW_OK)
     {
@@ -245,7 +240,7 @@ int main(int argc, char *argv[])
     g_axis = createAxis(*r_state[1], 1);
 
     gem_radius = 0.3;
-
+	amount_expl = 0;
     /*********************************************
      * SET GL STATE
      *********************************************/ 
@@ -254,9 +249,9 @@ int main(int argc, char *argv[])
     /*********************************************
      * RENDER LOOP
      *********************************************/
-    glfwSetTime(0.0);
-    while (!glfwWindowShouldClose(c_state.window))
-        display();
+    printHelp();
+    c_state.resetTimer();
+    glutMainLoop();
 
     /*********************************************
      * CLEAN UP
@@ -264,8 +259,6 @@ int main(int argc, char *argv[])
     delete g_mesh;
     delete g_gem;
     delete g_axis;
-
-    glfwTerminate();
 
     exit(EXIT_SUCCESS);
 }
