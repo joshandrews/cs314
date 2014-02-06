@@ -62,11 +62,6 @@ glm::mat4 N = glm::mat4( 1.0, 0.0, 0.0, 0.0,
                          0.0, 0.0, 1.0, 0.0, 
                          0.0, 1.0, -0.3, 1);
 
-// the rotation of the head with repect to the neck
-glm::mat4 H = glm::mat4( 1.0, 0.0, 0.0, 0.0,
-                         0.0, 1.0, 0.0, 0.0,
-                         0.0, 0.0, 1.0, 0.0, 
-                         0.0, 0.0, 0.0, 1);
 
 // the display loop, where all of the code that actually
 // changes what you see goes
@@ -169,9 +164,16 @@ void display()
     // calculate rotations into H (using head_rot_X)
     // load H and N into shader
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    
+    // head_rot_X is stored in radians.  I convert it to degrees
     float rot_in_degrees = head_rot_X*180/M_PI;
-    H = glm::rotate(H,rot_in_degrees,glm::vec3(1.0f,0.0f,0.0f));
-    glm::mat4 rotInFrame = N*H*glm::inverse(N);
+    
+    // Create rotation matrix based on 
+    glm::mat4 headRot = glm::rotate(glm::mat4(1.0f),rot_in_degrees,glm::vec3(1.0f,0.0f,0.0f));
+    
+    // Calculate the rotation in reference to the frame by using rotationMatrix & N^-1.
+    // Then put back in world frame by Multiplying by N
+    glm::mat4 rotInFrame = N*headRot*glm::inverse(N);
     
     glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "gem_pos"), 1, glm::value_ptr(gem_position));
     glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "rotInFrame"), 1, false, glm::value_ptr(rotInFrame));

@@ -43,7 +43,8 @@ void main()
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   // YOUR CODE HERE
   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  if (Position.x > 0 && Position.y > 1 && Position.z > -0.3) {
+  // the bounds I'm using for head frame
+  if (abs(Position.x) < .6 && Position.y > 0.3 && Position.z > -0.3) {
       gl_Position = MVP * rotInFrame * Position;
   }
   else {
