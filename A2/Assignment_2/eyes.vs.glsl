@@ -1,6 +1,6 @@
 #version 330
 
-layout (location = 0) in vec3 Position;
+layout (location = 0) in vec4 Position;
 layout (location = 1) in vec3 Normal;
 
 out vec3 LightIntensity;
@@ -23,17 +23,23 @@ struct MaterialInfo
 };
 uniform MaterialInfo Material;
 
+uniform mat4 ModelViewMatrix;
 uniform mat3 NormalMatrix;      // we keep a MV matrix without the translation component to apply to vectors
+uniform mat4 ProjectionMatrix;
 uniform mat4 MVP;               // ModelViewProjection Matrix
 
-uniform vec3 gem_pos; // location of the gem
+uniform mat4 transRotScale;
 
 void main()
 {
-    // determine vertex color
-    vec3 tnorm     = normalize( NormalMatrix * Normal );
-    vec3 s         = vec3(Light.Position); // incident vector
-    LightIntensity = dot(s, tnorm) * Material.Ka * 0.4 + Material.Ka * 0.6;
+  // determine vertex color
+  vec3 tnorm     = normalize( NormalMatrix * Normal );
+  vec3 s         = normalize( vec3(Light.Position) ); // incident vector
+  LightIntensity = dot(s, tnorm) * Material.Ka * 0.4 + Material.Ka * 0.6;
 
-    gl_Position = MVP * vec4(Position + gem_pos, 1.0);
+  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  // YOUR CODE HERE
+  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  gl_Position = MVP * transRotScale * Position;
 }

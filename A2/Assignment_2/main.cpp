@@ -181,6 +181,18 @@ void display()
     {
         w_state->useProgram(3);
 
+        // Scaling matrix
+        glm::mat4 scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.05f));
+        
+        // Rotation matrix calculation - similar to lookAt from lecture
+        glm::vec3 y = glm::normalize(gem_position - Leye_pos);
+        glm::vec3 x = glm::normalize(glm::cross(glm::vec3(0.0f,1.0f,0.0f), y));
+        glm::vec3 z = glm::normalize(glm::cross(y, x));
+        glm::mat4 rotMatrix = glm::mat4(glm::vec4(x,0.0f),glm::vec4(y,0.0f),glm::vec4(z,0.0f),glm::vec4(0.0f,0.0f,0.0f,1.0f));
+        
+
+        // Translation Matrix
+        glm::mat4 transMatrix = glm::translate(glm::mat4(1.0f), Leye_pos);
         //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         // YOUR CODE HERE
         // calculate rotation of eyes (hint: Rodrigues' formula)
@@ -188,6 +200,9 @@ void display()
         //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
         // load values into shader
+
+        glm::mat4 transRotScale = transMatrix*rotMatrix*scalingMatrix;
+        glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "transRotScale"), 1, false, glm::value_ptr(transRotScale));
         glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "gem_pos"), 1, glm::value_ptr(gem_position));
         glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "eye_pos"), 1, glm::value_ptr(Leye_pos));
 
