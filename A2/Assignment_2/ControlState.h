@@ -90,6 +90,7 @@ public:
     //program specific control scheme
     glm::vec3 gemMove;
     float gemRadius;
+    float ballGlow;
     RENDER_MODE mode;
 
     ControlState()

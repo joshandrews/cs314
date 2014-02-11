@@ -92,8 +92,6 @@ void display()
 
     // update global gem position and radius and amount exploded
     gem_position += c_state.gemMove * STEP_PER_SECOND;
-    gem_radius   = max(0.0f, gem_radius + c_state.gemRadius * STEP_PER_SECOND);
-	amount_expl += c_state.armBlow * .05;
 	
     // update gem mesh internal modelview transform matrix
     g_gem->m_MV = glm::translate(g_gem->m_MV, c_state.gemMove * STEP_PER_SECOND);

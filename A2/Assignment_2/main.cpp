@@ -56,6 +56,7 @@ glm::vec3 gem_position;
 glm::vec3 Leye_pos;
 glm::vec3 Reye_pos;
 float head_rot_X;
+float ball_glow;
 // the neck frame
 glm::mat4 N = glm::mat4( 1.0, 0.0, 0.0, 0.0,
                          0.0, 1.0, 0.0, 0.0,
@@ -102,7 +103,8 @@ void display()
 
     // update global gem position and radius
     gem_position += c_state.gemMove * STEP_PER_SECOND;
-
+    ball_glow   = max(1.0f, ball_glow + c_state.ballGlow * STEP_PER_SECOND);
+    
     // update gem mesh internal modelview transform matrix
     g_gem->m_MV = glm::translate(g_gem->m_MV, c_state.gemMove * STEP_PER_SECOND);
 
@@ -175,8 +177,34 @@ void display()
     // Then put back in world frame by Multiplying by N
     glm::mat4 rotInFrame = N*headRot*glm::inverse(N);
     
+
+    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    //                  Start Creative Part!!
+    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    glm::mat4 FL = glm::mat4( 1.0, 0.0, 0.0, 0.0,
+                         0.0, 1.0, 0.0, 0.0,
+                         0.0, 0.0, 1.0, 0.0, 
+                         1, 1, 0.2, 1);
+
+    glm::mat4 fingrotL = glm::rotate(glm::mat4(1.0f),(ball_glow-1)*20,glm::vec3(0.0f,1.0f,0.0f));
+    glm::mat4 rotFingL = FL*fingrotL*glm::inverse(FL);
+
+    // Extremely carefully positioned pivot point......
+    glm::mat4 FR = glm::mat4( 1.0, 0.0, 0.0, 0.0,
+                         0.0, 1.0, 0.0, 0.0,
+                         0.0, 0.0, 1.0, 0.0, 
+                         -1.35, 1, 0.0, 1);
+
+    glm::mat4 fingrotR = glm::rotate(glm::mat4(1.0f),(ball_glow-1)*-20,glm::vec3(0.0f,1.0f,0.0f));
+    glm::mat4 rotFingR = FR*fingrotR*glm::inverse(FR);
+
+    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    //                  End Creative Part!!
+    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "gem_pos"), 1, glm::value_ptr(gem_position));
     glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "rotInFrame"), 1, false, glm::value_ptr(rotInFrame));
+    glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "rotFingL"), 1, false, glm::value_ptr(rotFingL));
+    glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "rotFingR"), 1, false, glm::value_ptr(rotFingR));
 
     w_state->loadTransforms();
     w_state->loadMaterials();
@@ -188,11 +216,34 @@ void display()
      ***********************************/
     if (c_state.mode == MODE_EYES || c_state.mode == MODE_LASERS)
     {
+
+        w_state->useProgram(5);
+
+        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        //                  Start Creative Part!!
+        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+        // Scaling matrix
+        glm::mat4 b_scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(log(ball_glow)/log(5)));
+        glm::mat4 b_transMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,1));
+        glm::mat4 b_transRotScale = b_transMatrix*b_scalingMatrix;
+        glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "transRotScale"), 1, false, glm::value_ptr(b_transRotScale));
+        glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "ball_glow"), 1/ball_glow);
+
+        w_state->loadTransforms();
+        w_state->loadMaterials();
+        w_state->loadLights();
+        g_eye->drawMesh();
+
+        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        //                  End Creative Part!!
+        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
         w_state->useProgram(3);
 
         // Scaling matrix
         glm::mat4 scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.05f));
-        
+
         // Rotation matrix calculation - similar to lookAt from lecture
         glm::vec3 l_y = glm::normalize(gem_position - Leye_pos);
         glm::vec3 l_x = glm::normalize(glm::cross(glm::vec3(0.0f,1.0f,0.0f), l_y));
@@ -339,7 +390,7 @@ int main(int argc, char *argv[])
      * SHADER SETUP
      *********************************************/
     // read default shaders from file
-    GLuint shaderProgram[5] = {0};
+    GLuint shaderProgram[6] = {0};
     GLuint shaders[2] = {0};
 
     buildShader(GL_VERTEX_SHADER, "axes.vs.glsl", shaders[0]);
@@ -366,12 +417,16 @@ int main(int argc, char *argv[])
     buildShader(GL_VERTEX_SHADER, "lasers.vs.glsl", shaders[0]);
     shaderProgram[4] = buildProgram(2, shaders);
 
+    buildShader(GL_VERTEX_SHADER, "ball.vs.glsl", shaders[0]);
+    shaderProgram[5] = buildProgram(2, shaders);
+
     // bind shader program
     w_state->setProgram(0, shaderProgram[0]);
     w_state->setProgram(1, shaderProgram[1]);
     w_state->setProgram(2, shaderProgram[2]);
     w_state->setProgram(3, shaderProgram[3]);
     w_state->setProgram(4, shaderProgram[4]);
+    w_state->setProgram(5, shaderProgram[5]);
     w_state->useProgram(0);
 
     // setup the transform matrices and uniform variables

@@ -28,6 +28,8 @@ uniform mat3 NormalMatrix;      // we keep a MV matrix without the translation c
 uniform mat4 ProjectionMatrix;
 uniform mat4 MVP;               // ModelViewProjection Matrix
 uniform mat4 rotInFrame;               // Rotation in frame for head
+uniform mat4 rotFingL;               // Rotation in frame for left hand
+uniform mat4 rotFingR;               // Rotation in frame for right hand
 
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 // YOUR CODE HERE
@@ -46,6 +48,12 @@ void main()
   // the bounds I'm using for head frame
   if (abs(Position.x) < .6 && Position.y > 0.3 && Position.z > -0.3) {
       gl_Position = MVP * rotInFrame * Position;
+  }
+  else if (Position.x > .8 && Position.y > 0.3 && Position.z > 0.0) {
+      gl_Position = MVP * rotFingL * Position;
+  }
+  else if (Position.x < -.6 && Position.y > 0.3 && Position.z > -0.2) {
+      gl_Position = MVP * rotFingR * Position;
   }
   else {
       gl_Position = MVP * Position;

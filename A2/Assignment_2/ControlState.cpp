@@ -104,6 +104,7 @@ void printHelp()
 {
     printf("==== Help ====\n"
            "___Control___\n"
+           "b - heat up ball\n"
            "a - move in -x direction\n"
            "d - move in +x direction\n"
            "w - move in +z direction\n"
@@ -194,6 +195,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             break;
         case GLFW_KEY_MINUS:
             c_state.gemRadius = (action == GLFW_RELEASE) ? 0 : -1;
+            break;
+        case GLFW_KEY_B:
+            c_state.ballGlow = (action == GLFW_RELEASE) ? 0 : 1;
+            break;
+        case GLFW_KEY_V:
+            c_state.ballGlow = (action == GLFW_RELEASE) ? 0 : -1;
             break;
         case GLFW_KEY_M:
             c_state.mode = (RENDER_MODE)((c_state.mode + 1) % MODE_MAX);
