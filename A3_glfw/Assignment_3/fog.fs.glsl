@@ -26,6 +26,7 @@ struct MaterialInfo
 
 uniform MaterialInfo Material;
 uniform float current_mode;
+uniform float fog_weight;
 layout (location = 0) out vec4 FragColor;
 
 void main()
@@ -46,8 +47,8 @@ void main()
     vec3 specularvec0 = Material.Ks*Light0.Ld*specular0/flipper0;
     vec3 intensity0 = Light0.Intensity*(ambientvec0 + diffusevec0 + specularvec0);
     float fFogCoord = abs(vPosition.z/vPosition.w);
-    float fResult = min(0.98, 1-exp(-1*fFogCoord));
-	FragColor = mix(vec4(intensity0.x, intensity0.y, intensity0.z, 1.0)*2, vec4(0.5, 0.5, 0.5, 1.0), fResult);
+    float fResult = min(0.98, 1-exp(-1*fog_weight*fFogCoord));
+	FragColor = mix(vec4(intensity0.x, intensity0.y, intensity0.z, 1.0)*2, vec4(0.2, 0.5, 0.2, 1.0), fResult);
 
 
 }

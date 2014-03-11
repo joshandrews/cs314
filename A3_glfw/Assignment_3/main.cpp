@@ -56,8 +56,8 @@ Mesh *g_gem;
 Mesh *g_axis; // NOTE: only a single axis
 float gem_radius;
 glm::vec3 gem_position;
-
-
+float fogpos = 0.1;
+float inc = true;
 // the display loop, where all of the code that actually
 // changes what you see goes
 void display()
@@ -67,6 +67,24 @@ void display()
     if ((curr = glfwGetTime()) < 0.016666667) // curr < ~ 1/60
         return;
 
+    if (fogpos > 0.95) {
+        inc = false;
+    }
+    else if (fogpos < 0.1) {
+        inc = true;
+    }
+    if (inc && fogpos < 0.2) {
+        fogpos = fogpos + .001;
+    }
+    else if (inc) {
+        fogpos = fogpos + .005;
+    }
+    else if (fogpos < 0.2){
+        fogpos = fogpos - .005;
+    }
+    else {
+        fogpos = fogpos - .005;
+    }
     // start counting over
     glfwSetTime(0.0);
 
@@ -215,7 +233,8 @@ void display()
         Light0.Ld = glm::vec3(1.0, 1.0, 1.0);
         w_state->lights[0] = Light0;
         glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "current_mode"), 4.0);
-        glClearColor(0.5f, 0.5f, 0.5f, 1);
+        glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "fog_weight"), fogpos);
+        glClearColor(0.2f, 0.5f, 0.2f, 1);
     }
     
     // load values into shader
