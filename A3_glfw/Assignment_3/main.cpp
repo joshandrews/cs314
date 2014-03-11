@@ -57,6 +57,7 @@ Mesh *g_axis; // NOTE: only a single axis
 float gem_radius;
 glm::vec3 gem_position;
 
+
 // the display loop, where all of the code that actually
 // changes what you see goes
 void display()
@@ -153,24 +154,55 @@ void display()
     // elements, not the element you want to change
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     // Update lights with gem's position and color:
-    w_state->useProgram(2);
 
     // Use the appropriate shader based on the mode
     if (c_state.mode == MODE_PHONG) 
     {
+        w_state->useProgram(2);
         w_state->lights.push_back(LightInfo());
         LightInfo Light0 = w_state->lights[0];
         Light0.Position = w_state->modelview*glm::vec4(gem_position,1);
         Light0.La = glm::vec3(0.2);
+        Light0.Ld = glm::vec3(1.0, 1.0, 1.0);
         w_state->lights[0] = Light0;
+        glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "current_mode"), 1.0);
     }
     else if (c_state.mode == MODE_MULTI)
     {
-        // DO SOMETHING FOR MULTI SHADERS
+        w_state->useProgram(3);
+        w_state->lights.push_back(LightInfo());
+        LightInfo Light0 = w_state->lights[0];
+        Light0.Position = w_state->modelview*glm::vec4(gem_position,1);
+        Light0.La = glm::vec3(0.2);
+        Light0.Ld = glm::vec3(0.0, 1.0, 0.0);
+        w_state->lights[0] = Light0;
+
+        w_state->lights.push_back(LightInfo());
+        LightInfo Light1 = w_state->lights[1];
+        Light1.Position = w_state->modelview*glm::vec4(1.0, 1.0, -1.0, 1);
+        Light1.La = glm::vec3(0.2);
+        Light1.Ld = glm::vec3(1.0, 0.0, 0.0);
+        w_state->lights[1] = Light1;
+
+        w_state->lights.push_back(LightInfo());
+        LightInfo Light2 = w_state->lights[2];
+        Light2.Position = w_state->modelview*glm::vec4(-1.0, 1.0, -1.0, 1);
+        Light2.La = glm::vec3(0.2);
+        Light2.Ld = glm::vec3(0.0, 0.0, 1.0);
+        w_state->lights[2] = Light2;
+
+        glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "current_mode"), 2.0);
     }
     else
     {
-        // DO SOMETHING FOR TOON SHADERS
+        w_state->useProgram(2);   
+        w_state->lights.push_back(LightInfo());
+        LightInfo Light0 = w_state->lights[0];
+        Light0.Position = w_state->modelview*glm::vec4(gem_position,1);
+        Light0.La = glm::vec3(0.2);
+        Light0.Ld = glm::vec3(1.0, 1.0, 1.0);
+        w_state->lights[0] = Light0;
+        glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "current_mode"), 3.0); 
     }
     
     // load values into shader
@@ -269,8 +301,12 @@ int main(int argc, char *argv[])
     buildShader(GL_VERTEX_SHADER, "phong.vs.glsl", shaders[0]);
     buildShader(GL_FRAGMENT_SHADER, "phong.fs.glsl", shaders[1]);
 
-    // create axis shader program
     shaderProgram[2] = buildProgram(2, shaders);
+
+    buildShader(GL_VERTEX_SHADER, "multlights.vs.glsl", shaders[0]);
+    buildShader(GL_FRAGMENT_SHADER, "multlights.fs.glsl", shaders[1]);
+
+    shaderProgram[3] = buildProgram(2, shaders);
 
     // bind shader program
     w_state->setProgram(0, shaderProgram[0]);
