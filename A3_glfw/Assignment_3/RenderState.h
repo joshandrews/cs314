@@ -23,13 +23,13 @@
 
 #ifdef _WIN32
 #  include "GL/glew.h"
-#  include "GL/freeglut.h"
+#  include "GLFW/glfw3.h"
 # elif __APPLE__
 #  include <GL/glew.h>
-#  include <GL/freeglut.h>
+#  include <GLFW/glfw3.h>
 #else
 #  include <GL/glew.h>
-#  include <GL/freeglut.h>
+#  include <GLFW/glfw3.h>
 #endif
 
 /**

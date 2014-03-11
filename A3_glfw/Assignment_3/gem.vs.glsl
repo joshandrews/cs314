@@ -1,16 +1,13 @@
 #version 330
 
-// Copyright (c) Russell Gillette
-// December 2013
-
 layout (location = 0) in vec3 Position;
 layout (location = 1) in vec3 Normal;
 
-out vec3 LightIntensity;
+out vec3 Color;
 
 struct LightInfo
 {
-    vec4 Position; // we are going to treat this as a direction to acheive directional lighting
+    vec4 LPosition; // we are going to treat this as a direction to acheive directional lighting
     vec3 La;       // ambient light
     vec3 Ld;       // diffuse light
     vec3 Ls;       // specular light
@@ -29,12 +26,14 @@ uniform MaterialInfo Material;
 uniform mat3 NormalMatrix;      // we keep a MV matrix without the translation component to apply to vectors
 uniform mat4 MVP;               // ModelViewProjection Matrix
 
+uniform vec3 gem_pos; // location of the gem
+
 void main()
 {
     // determine vertex color
     vec3 tnorm     = normalize( NormalMatrix * Normal );
-    vec3 s         = vec3(Light.Position); // incident vector
-    LightIntensity = dot(s, tnorm) * Material.Ka * 0.4 + Material.Ka * 0.6;
+    vec3 s         = vec3(Light.LPosition); // incident vector
+    Color = dot(s, tnorm) * Material.Ka * 0.4 + Material.Ka * 0.6;
 
-    gl_Position = MVP * vec4(Position, 1.0);
+    gl_Position = MVP * vec4(Position + gem_pos, 1.0);
 }

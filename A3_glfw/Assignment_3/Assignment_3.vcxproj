@@ -12,14 +12,14 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2E095119-FECE-4302-85E4-806F23F62493}</ProjectGuid>
-    <RootNamespace>Assignment_1</RootNamespace>
-    <ProjectName>Assignment_1</ProjectName>
+    <RootNamespace>Assignment_3</RootNamespace>
+    <ProjectName>Assignment_3</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -46,10 +46,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\admin\Documents\cs314\GLStuff\includes</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\admin\Documents\cs314\GLStuff\libs</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -91,7 +93,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="gem.vs.glsl" />
-    <None Include="armadillo.vs.glsl" />
     <None Include="axes.vs.glsl" />
   </ItemGroup>
   <ItemGroup>

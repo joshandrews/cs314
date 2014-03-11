@@ -1,9 +1,16 @@
+# OS X
+ifeq ("$(shell uname)", "Darwin")
+	LFLAGS = -lglfw3 -framework CoreVideo -framework Cocoa -framework OpenGL -framework IOKit -lGLEW
+# Linux
+else
+	LFLAGS = -lGL -lfreeglut -lGLEW
+endif
+
 
 CC = g++
-LFLAGS = -lGL -lglut -lGLEW -I/home/m/m1e8/Desktop/glm
 CFLAGS = -g $(LFLAGS)
 
-BIN = a1_shaderIntro
+BIN = a3_lighting
 CLS = main ControlState IBuffer Mesh ShaderUtils VBuffer WorldState
 SRC = $(CLS:%=%.cpp)
 OBJ = $(SRC:%.cpp=build/%.o)

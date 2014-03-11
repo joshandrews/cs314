@@ -79,16 +79,23 @@ void WorldState::loadObjectTransforms(glm::mat4 oMV)
 
 void WorldState::loadLight(unsigned int i)
 {
-    glm::normalize(lights[i].Position);
-    glUniform4fv(glGetUniformLocation(shaders[currentProgram], "Light.Position"), 1, glm::value_ptr(lights[i].Position));
-    glUniform3fv(glGetUniformLocation(shaders[currentProgram], "Light.La"), 1, glm::value_ptr(lights[i].La));
-    glUniform3fv(glGetUniformLocation(shaders[currentProgram], "Light.Ld"), 1, glm::value_ptr(lights[i].Ld));
-    glUniform3fv(glGetUniformLocation(shaders[currentProgram], "Light.Ls"), 1, glm::value_ptr(lights[i].Ls));
+    // Load lights based on their index so as not to overwrite other lights.
+    char position[20], la[20], ld[20], ls[20], intensity[20];
+    sprintf(position, "Light%d.Position\0",i);
+    sprintf(la, "Light%d.La\0",i);
+    sprintf(ld, "Light%d.Ld\0",i);
+    sprintf(ls, "Light%d.Ls\0",i);
+    sprintf(intensity, "Light%d.Intensity\0",i);
+    
+    glUniform4fv(glGetUniformLocation(shaders[currentProgram], position), 1, glm::value_ptr(lights[i].Position));
+    glUniform3fv(glGetUniformLocation(shaders[currentProgram], la), 1, glm::value_ptr(lights[i].La));
+    glUniform3fv(glGetUniformLocation(shaders[currentProgram], ld), 1, glm::value_ptr(lights[i].Ld));
+    glUniform3fv(glGetUniformLocation(shaders[currentProgram], ls), 1, glm::value_ptr(lights[i].Ls));
+    glUniform3fv(glGetUniformLocation(shaders[currentProgram], intensity), 1, glm::value_ptr(lights[i].Intensity));
 }
 
 void WorldState::loadLights()
 {
-    // TODO: each load light currently overwrites itself, need to fix shaders and loadLight(i)
     for (unsigned int i = 0; i < lights.size(); i++)
         loadLight(i);
 }

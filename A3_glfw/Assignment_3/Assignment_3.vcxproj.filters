@@ -70,9 +70,6 @@
     <None Include="axes.vs.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="armadillo.vs.glsl">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
     <None Include="gem.vs.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>

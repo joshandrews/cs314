@@ -25,7 +25,9 @@
 ControlState c_state = ControlState();
 
 ControlState::~ControlState()
-{}
+{
+    glfwDestroyWindow(window);
+}
 
 int ControlState::init(WorldState &w)
 {
@@ -33,25 +35,22 @@ int ControlState::init(WorldState &w)
 
     width  = 640;
     height = 480;
-    glutInitWindowSize(width, height);
-    glutInitWindowPosition(0,0);
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-
-    if (!glutCreateWindow("Window"))
+    /* As of right now we only have one window */
+    window = glfwCreateWindow(width, height, "Window", NULL, NULL);
+    if (!window)
     {
+        glfwTerminate();
         fputs("failed to initialize window", stderr);
         return 1; // error
     }
+    glfwMakeContextCurrent(window);
 
     // bind all callbacks
-    glutKeyboardFunc(key_callback);
-    glutKeyboardUpFunc(keyUp_callback);
-    glutSpecialFunc(skey_callback);
-    glutSpecialUpFunc(skeyUp_callback);
-    glutReshapeFunc(reshape_callback);
-    glutMotionFunc(mousePos_callback);
-    glutMouseFunc(mouseBtn_callback);
-    glutIdleFunc(idle_callback);
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetFramebufferSizeCallback(window, reshape_callback);
+    glfwSetCursorPosCallback(window, mousePos_callback);
+    glfwSetMouseButtonCallback(window, mouseBtn_callback);
+    glfwSetScrollCallback(window, mouseScroll_callback);
 
     return 0;
 }
@@ -71,23 +70,6 @@ void ControlState::updateView(float dTheta, float dPhi, float dDepth)
     viewTheta = fmod(viewTheta + 360 + float(dTheta), 360);
     viewPhi   = std::min(90.0f, std::max(-90.0f, viewPhi + dPhi));
     viewDepth += dDepth;
-    if (!dDepth)
-    { // should not ever be zero due to some of the glm functions used
-        dDepth = 0.00000000001;
-    }
-}
-
-void ControlState::resetTimer()
-{
-    ellapsed_time = 0.0;
-    time = clock();
-}
-
-double ControlState::queryTimer()
-{
-    ellapsed_time += clock() - time;
-    time = clock();
-    return ellapsed_time;
 }
 
 void printHelp()
@@ -99,7 +81,8 @@ void printHelp()
            "w - move in +z direction\n"
            "s - move in -z direction\n"
            "x - move in -y direction\n"
-           "c - move in +y direction\n\n"
+           "c - move in +y direction\n"
+           "m - switch shader\n\n"
            "___Command___\n"
            "q, esc - exit\n"
            "h - help (you have already figured this out)\n\n"
@@ -111,8 +94,14 @@ void printHelp()
 /*****************************************************************************
  * Passive Callback functions
  *****************************************************************************/
+// error callback for GLFW
+static void error_callback(int error, const char* desc)
+{
+    fputs(desc, stderr);
+}
+
 // callback when window is resized
-void reshape_callback(int w, int h)
+void reshape_callback(GLFWwindow* window, int w, int h)
 {
     c_state.height = h;
     c_state.width  = w;
@@ -120,170 +109,89 @@ void reshape_callback(int w, int h)
     glViewport( 0, 0, (GLint)w, (GLint)h );
 }
 
-void idle_callback()
-{
-    glutPostRedisplay();
-}
-
 /*****************************************************************************
  * Active Callback functions
  *****************************************************************************/
 // callback when a key is pressed
-void skey_callback(int key, int x, int y)
-{
-    switch(key)
-    {
-    case GLUT_KEY_LEFT:
-        c_state.arrL = 1;
-        break;
-    case GLUT_KEY_RIGHT:
-        c_state.arrR = 1;
-        break;
-    case GLUT_KEY_UP:
-        c_state.arrU = 1;
-        break;
-    case GLUT_KEY_DOWN:
-        c_state.arrD = 1;
-        break;
-    }
-}
-
-void key_callback(unsigned char key, int x, int y)
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
     /* key code goes here */
 
     switch(key)
     {
-    case 27: //escape
-    case 'q':
-        exit(0);
+    case GLFW_KEY_ESCAPE:
+        glfwSetWindowShouldClose(window, GL_TRUE);
         break;
-    case 'h':
+    case GLFW_KEY_Q:
+        glfwSetWindowShouldClose(window, GL_TRUE);
+        break;
+    case GLFW_KEY_H:
         printHelp();
         break;
-    case 'w':
-        c_state.gemMove[2] = 1;
+    case GLFW_KEY_LEFT:
+        c_state.arrL = (action == GLFW_RELEASE) ? 0 : 1;
         break;
-    case 'a':
-        c_state.gemMove[0] = -1;
+    case GLFW_KEY_RIGHT:
+        c_state.arrR = (action == GLFW_RELEASE) ? 0 : 1;
         break;
-    case 's':
-        c_state.gemMove[2] = -1;
+    case GLFW_KEY_UP:
+        c_state.arrU = (action == GLFW_RELEASE) ? 0 : 1;
         break;
-    case 'd':
-        c_state.gemMove[0] = 1;
+    case GLFW_KEY_DOWN:
+        c_state.arrD = (action == GLFW_RELEASE) ? 0 : 1;
         break;
-    case 'x':
-        c_state.gemMove[1] = -1;
+    case GLFW_KEY_W:
+        c_state.gemMove[2] = (action == GLFW_RELEASE) ? 0 : 1;
         break;
-    case 'c':
-        c_state.gemMove[1] = 1;
+    case GLFW_KEY_A:
+        c_state.gemMove[0] = (action == GLFW_RELEASE) ? 0 : -1;
         break;
-    case 'r':
-        c_state.gemMove[1] = 1;
+    case GLFW_KEY_S:
+        c_state.gemMove[2] = (action == GLFW_RELEASE) ? 0 : -1;
         break;
-    case '=':
-        c_state.gemRadius = 1;
+    case GLFW_KEY_D:
+        c_state.gemMove[0] = (action == GLFW_RELEASE) ? 0 : 1;
         break;
-    case '-':
-        c_state.gemRadius = -1;
+    case GLFW_KEY_X:
+        c_state.gemMove[1] = (action == GLFW_RELEASE) ? 0 : -1;
         break;
-    case 'b':
-    	c_state.armBlow = 1;
-    	break;
-    case 'n':
-    	c_state.armBlow = -1;
-    	break;
-    }
-}
-
-void skeyUp_callback(int key, int x, int y)
-{
-    switch(key)
-    {
-    case GLUT_KEY_LEFT:
-        c_state.arrL = 0;
+    case GLFW_KEY_C:
+        c_state.gemMove[1] = (action == GLFW_RELEASE) ? 0 : 1;
         break;
-    case GLUT_KEY_RIGHT:
-        c_state.arrR = 0;
+    case GLFW_KEY_R:
+        c_state.gemMove[1] = (action == GLFW_RELEASE) ? 0 : 1;
         break;
-    case GLUT_KEY_UP:
-        c_state.arrU = 0;
+    case GLFW_KEY_EQUAL:
+        c_state.gemRadius = (action == GLFW_RELEASE) ? 0 : 1;
         break;
-    case GLUT_KEY_DOWN:
-        c_state.arrD = 0;
+    case GLFW_KEY_MINUS:
+        c_state.gemRadius = (action == GLFW_RELEASE) ? 0 : -1;
+        break;
+    case GLFW_KEY_M:
+        if (action == GLFW_RELEASE) {
+            c_state.mode = (RENDER_MODE)((c_state.mode + 1) % MODE_MAX);
+        }
         break;
     }
-}
-
-void keyUp_callback(unsigned char key, int x, int y)
-{
-    /* key code goes here */
-
-    switch(key)
-    {
-    case 27: //escape
-    case 'q':
-        exit(0);
-        break;
-    case 'w':
-        c_state.gemMove[2] = 0;
-        break;
-    case 'a':
-        c_state.gemMove[0] = 0;
-        break;
-    case 's':
-        c_state.gemMove[2] = 0;
-        break;
-    case 'd':
-        c_state.gemMove[0] = 0;
-        break;
-    case 'x':
-        c_state.gemMove[1] = 0;
-        break;
-    case 'c':
-        c_state.gemMove[1] = 0;
-        break;
-    case 'r':
-        c_state.gemMove[1] = 0;
-        break;
-    case '=':
-        c_state.gemRadius = 0;
-        break;
-    case '-':
-        c_state.gemRadius = 0;
-        break;
-    case 'b':
-    	c_state.armBlow = 0;
-    	break;
-    case 'n':
-    	c_state.armBlow = 0;
-    	break;
-    }
+    
 }
 
 // callback when a mouse button is pressed
-void mouseBtn_callback(int button, int state, int x, int y)
+static void mouseBtn_callback(GLFWwindow* win, int button, int action, int mod)
 {
     /* TODO: any controls relative to pressing the mouse buttons goes here */
-    c_state.mouseX = x;
-    c_state.mouseY = c_state.height - y;
 
-    if (button == GLUT_LEFT_BUTTON)
-        c_state.mouseBtnL = (state == GLUT_DOWN) ? 1 : 0;
-    else if (button == GLUT_RIGHT_BUTTON)
-        c_state.mouseBtnR = (state == GLUT_DOWN) ? 1 : 0;
-    else if (button == GLUT_MIDDLE_BUTTON)
-        c_state.mouseBtnR = (state == GLUT_DOWN) ? 1 : 0;
-    else if (button == 3) // scroll down
-        c_state.mouseScroll = 1.0/20.0f;
-    else if (button == 4) // scroll up
-        c_state.mouseScroll = -1.0/20.0f;
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+        c_state.mouseBtnL = (action == GLFW_PRESS) ? 1 : 0;
+    else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+        c_state.mouseBtnR = (action == GLFW_PRESS) ? 1 : 0;
+    else if (button == GLFW_MOUSE_BUTTON_MIDDLE)
+        c_state.mouseBtnC = (action == GLFW_PRESS) ? 1 : 0;
 }
 
 // callback when the mouse is moved. This will be called
 // ALOT keep it as light as possible!!
-void mousePos_callback(int x, int y)
+static void mousePos_callback(GLFWwindow* win, double x, double y)
 {
     // screen Y coords are inverted.
     y = c_state.height - y;
@@ -302,4 +210,9 @@ void mousePos_callback(int x, int y)
 
     c_state.mouseX = x;
     c_state.mouseY = y;
+}
+
+static void mouseScroll_callback(GLFWwindow* win, double x_offset, double y_offset)
+{
+    c_state.mouseScroll = y_offset/20;
 }

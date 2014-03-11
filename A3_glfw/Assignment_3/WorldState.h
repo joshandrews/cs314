@@ -32,13 +32,13 @@
 
 #ifdef _WIN32
 #  include "GL/glew.h"
-#  include "GL/freeglut.h"
+#  include "GLFW/glfw3.h"
 # elif __APPLE__
 #  include <GL/glew.h>
-#  include <GL/freeglut.h>
+#  include <GLFW/glfw3.h>
 #else
 #  include <GL/glew.h>
-#  include <GL/freeglut.h>
+#  include <GLFW/glfw3.h>
 #endif
 
 #include <vector>
@@ -54,13 +54,15 @@ struct LightInfo
     glm::vec3 La;       // ambient light
     glm::vec3 Ld;       // diffuse light
     glm::vec3 Ls;       // specular light
+    glm::vec3 Intensity;// light intensity
 
     // some default initialization parameters
-    LightInfo() 
-        : Position(10, 6, 4, 0), 
-          La(0.5, 0.5, 0.5),
-          Ld(0.5, 0.5, 0.5),
-          Ls(0.5, 0.5, 0.5) {}
+    LightInfo()
+    : Position(10.0, 6.0, 4.0, 1.0),
+    La(0.9, 0.9, 0.9),
+    Ld(1.0, 1.0, 1.0),
+    Ls(1.0, 1.0, 1.0),
+    Intensity(1.0,1.0,1.0){}
 };
 
 // Material and Color state
@@ -72,12 +74,11 @@ struct MaterialInfo
     float Shininess;
 
     // some default initialization parameters
-    MaterialInfo() 
-        : Ka(0.6, 0.6, 0.6),
-          Kd(0.6, 0.6, 0.6),
-          Ks(0.6, 0.6, 0.6),
-          Shininess(0.5f) {}
-
+    MaterialInfo()
+        : Ka(0.2, 0.2, 0.2),
+          Kd(0.7, 0.7, 0.7),
+          Ks(0.9, 0.9, 0.9),
+          Shininess(100.0f) {}
     void custom_color(glm::vec3 color) {Ka = color;}
 };
 
