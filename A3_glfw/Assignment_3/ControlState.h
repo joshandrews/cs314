@@ -36,6 +36,7 @@ enum RENDER_MODE
     MODE_PHONG=0,
     MODE_MULTI,
     MODE_TOON,
+    MODE_PHOG,
     MODE_MAX,
 };
 

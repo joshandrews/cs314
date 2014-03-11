@@ -158,11 +158,12 @@ void display()
     // Use the appropriate shader based on the mode
     if (c_state.mode == MODE_PHONG) 
     {
+        glClearColor(0.0f, 0.0f, 0.0f, 1);
         w_state->useProgram(2);
         w_state->lights.push_back(LightInfo());
         LightInfo Light0 = w_state->lights[0];
         Light0.Position = w_state->modelview*glm::vec4(gem_position,1);
-        Light0.La = glm::vec3(0.2);
+        Light0.La = glm::vec3(0.6);
         Light0.Ld = glm::vec3(1.0, 1.0, 1.0);
         w_state->lights[0] = Light0;
         glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "current_mode"), 1.0);
@@ -173,36 +174,48 @@ void display()
         w_state->lights.push_back(LightInfo());
         LightInfo Light0 = w_state->lights[0];
         Light0.Position = w_state->modelview*glm::vec4(gem_position,1);
-        Light0.La = glm::vec3(0.2);
+        Light0.La = glm::vec3(0.3);
         Light0.Ld = glm::vec3(0.0, 1.0, 0.0);
         w_state->lights[0] = Light0;
 
         w_state->lights.push_back(LightInfo());
         LightInfo Light1 = w_state->lights[1];
         Light1.Position = w_state->modelview*glm::vec4(1.0, 1.0, -1.0, 1);
-        Light1.La = glm::vec3(0.2);
+        Light1.La = glm::vec3(0.3);
         Light1.Ld = glm::vec3(1.0, 0.0, 0.0);
         w_state->lights[1] = Light1;
 
         w_state->lights.push_back(LightInfo());
         LightInfo Light2 = w_state->lights[2];
         Light2.Position = w_state->modelview*glm::vec4(-1.0, 1.0, -1.0, 1);
-        Light2.La = glm::vec3(0.2);
+        Light2.La = glm::vec3(0.3);
         Light2.Ld = glm::vec3(0.0, 0.0, 1.0);
         w_state->lights[2] = Light2;
 
         glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "current_mode"), 2.0);
     }
-    else
+    else if (c_state.mode == MODE_TOON)
     {
         w_state->useProgram(2);   
         w_state->lights.push_back(LightInfo());
         LightInfo Light0 = w_state->lights[0];
         Light0.Position = w_state->modelview*glm::vec4(gem_position,1);
-        Light0.La = glm::vec3(0.2);
+        Light0.La = glm::vec3(0.6);
         Light0.Ld = glm::vec3(1.0, 1.0, 1.0);
         w_state->lights[0] = Light0;
         glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "current_mode"), 3.0); 
+    }
+    else // Creative part, c_state.mode == MODE_PHOG
+    {
+        w_state->useProgram(4);
+        w_state->lights.push_back(LightInfo());
+        LightInfo Light0 = w_state->lights[0];
+        Light0.Position = w_state->modelview*glm::vec4(gem_position,1);
+        Light0.La = glm::vec3(0.6);
+        Light0.Ld = glm::vec3(1.0, 1.0, 1.0);
+        w_state->lights[0] = Light0;
+        glUniform1f(glGetUniformLocation(w_state->getCurrentProgram(), "current_mode"), 4.0);
+        glClearColor(0.5f, 0.5f, 0.5f, 1);
     }
     
     // load values into shader
@@ -213,7 +226,6 @@ void display()
     w_state->loadMaterials();
     w_state->loadLights();
     g_mesh->drawMesh();
-    
     glfwSwapBuffers(c_state.window);
     glfwPollEvents();
 }
@@ -308,6 +320,11 @@ int main(int argc, char *argv[])
 
     shaderProgram[3] = buildProgram(2, shaders);
 
+    buildShader(GL_VERTEX_SHADER, "fog.vs.glsl", shaders[0]);
+    buildShader(GL_FRAGMENT_SHADER, "fog.fs.glsl", shaders[1]);
+
+    shaderProgram[4] = buildProgram(2, shaders);
+
     // bind shader program
     w_state->setProgram(0, shaderProgram[0]);
     w_state->setProgram(1, shaderProgram[1]);
@@ -362,7 +379,6 @@ int main(int argc, char *argv[])
      * SET GL STATE
      *********************************************/ 
     glEnable(GL_DEPTH_TEST);
-
     /*********************************************
      * RENDER LOOP
      *********************************************/
