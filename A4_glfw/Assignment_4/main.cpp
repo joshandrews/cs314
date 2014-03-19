@@ -154,6 +154,7 @@ void display()
         /*@@@@@@@@@@@@@@@@@@@@@@@@@@@
           @ for environment mapping  
           @@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+        w_state->useProgram(3);
     }
     else // projection
     {
@@ -257,16 +258,21 @@ int main(int argc, char *argv[])
     // (3) linear projection onto the model
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-    // create gem shader
+    // create texture shader
     buildShader(GL_VERTEX_SHADER, "texture.vs.glsl", shaders[0]);
     buildShader(GL_FRAGMENT_SHADER, "texture.fs.glsl", shaders[1]);
     shaderProgram[2] = buildProgram(2, shaders);
+
+    // Create cube map shader
+    buildShader(GL_VERTEX_SHADER, "cubemap.vs.glsl", shaders[0]);
+    buildShader(GL_FRAGMENT_SHADER, "cubemap.fs.glsl", shaders[1]);
+    shaderProgram[3] = buildProgram(2, shaders);
 
     // bind shader program
     w_state->setProgram(0, shaderProgram[0]);
     w_state->setProgram(1, shaderProgram[1]);
     w_state->setProgram(2, shaderProgram[2]);
-    //w_state->setProgram(3, shaderProgram[3]);
+    w_state->setProgram(3, shaderProgram[3]);
     //w_state->setProgram(4, shaderProgram[4]);
     w_state->useProgram(0);
 
@@ -314,15 +320,13 @@ int main(int argc, char *argv[])
      @
      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
     
+    // FOR SIMPLE TEXTURE MAPPING
+
     LoadTGAFile("CMaps/wall_512_1_05.tga", &image[0]);
     texture_info te = texture_info(image[0].imageWidth, image[0].imageHeight);
     tex0.loadTexture(GL_TEXTURE0, te, image[0].imageData);
 
     w_state->textures.push_back(tex0);
-    
-    for (int i = 0; i < 8; i++) {
-        delete [] image[i].imageData;
-    }
 
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     // the load TGA function allocates memory that needs
@@ -331,6 +335,39 @@ int main(int argc, char *argv[])
     //for (int i = 0; i < 8; i++)
     //    delete [] image[i].imageData;
 
+    // FOR CUBE MAPPING
+
+    TextureCubeMap texCube;
+    LoadTGAFile("CMaps/stormydays_lf.tga", &image[1]);
+    texture_info te0 = texture_info(image[1].imageWidth, image[1].imageHeight);
+    texCube.loadTexture0(GL_TEXTURE1, te0, image[1].imageData);
+
+    LoadTGAFile("CMaps/stormydays_rt.tga",&image[2]);
+    texture_info te1 = texture_info(image[2].imageWidth, image[2].imageHeight);
+    texCube.loadTexture1(GL_TEXTURE1, te1, image[2].imageData);
+
+    LoadTGAFile("CMaps/stormydays_dn.tga",&image[3]);
+    texture_info te2 = texture_info(image[3].imageWidth, image[3].imageHeight);
+    texCube.loadTexture2(GL_TEXTURE1, te2, image[3].imageData);
+
+    LoadTGAFile("CMaps/stormydays_up.tga",&image[4]);
+    texture_info te3 = texture_info(image[4].imageWidth, image[4].imageHeight);
+    texCube.loadTexture3(GL_TEXTURE1, te3, image[4].imageData);
+
+    LoadTGAFile("CMaps/stormydays_ft.tga",&image[5]);
+    texture_info te4 = texture_info(image[5].imageWidth, image[5].imageHeight);
+    texCube.loadTexture4(GL_TEXTURE1, te4, image[5].imageData);
+
+    LoadTGAFile("CMaps/stormydays_bk.tga",&image[6]);
+    texture_info te5 = texture_info(image[6].imageWidth, image[6].imageHeight);
+    texCube.loadTexture5(GL_TEXTURE1, te5, image[6].imageData);
+
+
+    w_state->textures.push_back(texCube);
+
+    for (int i = 0; i < 8; i++) {
+        delete [] image[i].imageData;
+    }
     /*********************************************
      * SET GL STATE
      *********************************************/ 
