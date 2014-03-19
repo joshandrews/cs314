@@ -147,10 +147,7 @@ void display()
      ***********************************/
     if (c_state.mode == MODE_TEXMAP)
     {  
-        /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-          @ anything you need to do texmap specific 
-          @ hint: set shader?
-          @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+        w_state->useProgram(2);
     }
     else if (c_state.mode == MODE_ENVMAP)
     {
@@ -260,10 +257,15 @@ int main(int argc, char *argv[])
     // (3) linear projection onto the model
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+    // create gem shader
+    buildShader(GL_VERTEX_SHADER, "texture.vs.glsl", shaders[0]);
+    buildShader(GL_FRAGMENT_SHADER, "texture.fs.glsl", shaders[1]);
+    shaderProgram[2] = buildProgram(2, shaders);
+
     // bind shader program
     w_state->setProgram(0, shaderProgram[0]);
     w_state->setProgram(1, shaderProgram[1]);
-    //w_state->setProgram(2, shaderProgram[2]);
+    w_state->setProgram(2, shaderProgram[2]);
     //w_state->setProgram(3, shaderProgram[3]);
     //w_state->setProgram(4, shaderProgram[4]);
     w_state->useProgram(0);
@@ -311,12 +313,22 @@ int main(int argc, char *argv[])
      @ i.e. uniform samplerCube TexSampler1;
      @
      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+    
+    LoadTGAFile("CMaps/wall_512_1_05.tga", &image[0]);
+    texture_info te = texture_info(image[0].imageWidth, image[0].imageHeight);
+    tex0.loadTexture(GL_TEXTURE0, te, image[0].imageData);
+
+    w_state->textures.push_back(tex0);
+    
+    for (int i = 0; i < 8; i++) {
+        delete [] image[i].imageData;
+    }
 
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     // the load TGA function allocates memory that needs
     // to be freed. uncomment this after calling it
     //
-    // for (int i = 0; i < 8; i++)
+    //for (int i = 0; i < 8; i++)
     //    delete [] image[i].imageData;
 
     /*********************************************
