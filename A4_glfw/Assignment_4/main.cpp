@@ -54,6 +54,7 @@ RenderState *r_state[2];
 // ControlState c_state;
 
 Mesh *g_mesh;
+Mesh *cube_mesh;
 Mesh *g_gem;
 Mesh *g_axis; // NOTE: only a single axis
 float gem_radius;
@@ -164,7 +165,23 @@ void display()
           @ note: for this part you will need to construct
           @ and pass in a new MVP for the projection.
           @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+        w_state->useProgram(4);
+
+        //glm::mat4 TS = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f));
+        glm::mat4 TS = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f)) * glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+        glm::mat4 P = glm::perspective(35.0f, 1.0f, 0.1f, 100.0f);
+        //glm::mat4 P = glm::mat4(1.0, 0.0, 0.0, 0.0,
+        //                        0.0, 1.0, 0.0, 0.0,
+        //                        0.0, 0.0, 0.0, -1.0,
+        //                        0.0, 0.0, 0.0, 0.0);
+        glm::mat4 V = glm::lookAt(
+            glm::vec3(0.0f, 0.0f, 2.0f), //eye
+            glm::vec3(0.0f, 0.0f, 0.0f), //center
+            glm::vec3(0.0f, 1.0f, 0.0f) //up
+            );
+        glUniformMatrix4fv(glGetUniformLocation(w_state->getCurrentProgram(), "uPV"), 1, false, glm::value_ptr(TS* P * V));
     }
+
 
     // load values into shader
     glUniform3fv(glGetUniformLocation(w_state->getCurrentProgram(), "gem_pos"), 1, glm::value_ptr(gem_position));
@@ -175,7 +192,16 @@ void display()
     w_state->loadLights();
     w_state->loadTextures();
     g_mesh->drawMesh();
-    
+
+    w_state->useProgram(5);
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(23.0f, 23.0f, 23.0f));
+    glm::mat4 tr = glm::translate(glm::mat4(1.0f), glm::vec3(glm::inverse(w_state->view)[3]));
+    w_state->loadObjectTransforms(tr*scale);
+    w_state->loadMaterials();
+    w_state->loadLights();
+    cube_mesh->drawMesh();
+
+
     glfwSwapBuffers(c_state.window);
     glfwPollEvents();
 }
@@ -238,7 +264,7 @@ int main(int argc, char *argv[])
      * SHADER SETUP
      *********************************************/
     // read default shaders from file
-    GLuint shaderProgram[5] = {0};
+    GLuint shaderProgram[6] = {0};
     GLuint shaders[2] = {0};
 
     buildShader(GL_VERTEX_SHADER, "axes.vs.glsl", shaders[0]);
@@ -268,12 +294,23 @@ int main(int argc, char *argv[])
     buildShader(GL_FRAGMENT_SHADER, "cubemap.fs.glsl", shaders[1]);
     shaderProgram[3] = buildProgram(2, shaders);
 
+    // Create projection shader
+    buildShader(GL_VERTEX_SHADER, "projection.vs.glsl", shaders[0]);
+    buildShader(GL_FRAGMENT_SHADER, "projection.fs.glsl", shaders[1]);
+    shaderProgram[4] = buildProgram(2, shaders);
+
+    // Create projection shader
+    buildShader(GL_VERTEX_SHADER, "cube.vs.glsl", shaders[0]);
+    buildShader(GL_FRAGMENT_SHADER, "cube.fs.glsl", shaders[1]);
+    shaderProgram[5] = buildProgram(2, shaders);
+
     // bind shader program
     w_state->setProgram(0, shaderProgram[0]);
     w_state->setProgram(1, shaderProgram[1]);
     w_state->setProgram(2, shaderProgram[2]);
     w_state->setProgram(3, shaderProgram[3]);
-    //w_state->setProgram(4, shaderProgram[4]);
+    w_state->setProgram(4, shaderProgram[4]);
+    w_state->setProgram(5, shaderProgram[5]);
     w_state->useProgram(0);
 
     // setup the transform matrices and uniform variables
@@ -286,6 +323,7 @@ int main(int argc, char *argv[])
      *********************************************/
     
     g_mesh = loadMeshFromFile(*r_state[0], "Mesh/arma_spec_tex_low.obj");
+    cube_mesh = loadMeshFromFile(*r_state[1], "Mesh/cube.obj");
     g_gem  = createGem(*r_state[0], 0.1);
     g_axis = createAxis(*r_state[1], 1);
 
@@ -320,7 +358,7 @@ int main(int argc, char *argv[])
      @
      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
     
-    // FOR SIMPLE TEXTURE MAPPING
+    // --------------------- FOR SIMPLE TEXTURE MAPPING --------------------- 
 
     LoadTGAFile("CMaps/wall_512_1_05.tga", &image[0]);
     texture_info te = texture_info(image[0].imageWidth, image[0].imageHeight);
@@ -328,21 +366,14 @@ int main(int argc, char *argv[])
 
     w_state->textures.push_back(tex0);
 
-    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    // the load TGA function allocates memory that needs
-    // to be freed. uncomment this after calling it
-    //
-    //for (int i = 0; i < 8; i++)
-    //    delete [] image[i].imageData;
-
-    // FOR CUBE MAPPING
+    // --------------------- FOR CUBE MAPPING --------------------- 
 
     TextureCubeMap texCube;
-    LoadTGAFile("CMaps/stormydays_lf.tga", &image[1]);
+    LoadTGAFile("CMaps/stormydays_ft.tga", &image[1]);
     texture_info te0 = texture_info(image[1].imageWidth, image[1].imageHeight);
     texCube.loadTexture0(GL_TEXTURE1, te0, image[1].imageData);
 
-    LoadTGAFile("CMaps/stormydays_rt.tga",&image[2]);
+    LoadTGAFile("CMaps/stormydays_bk.tga",&image[2]);
     texture_info te1 = texture_info(image[2].imageWidth, image[2].imageHeight);
     texCube.loadTexture1(GL_TEXTURE1, te1, image[2].imageData);
 
@@ -354,20 +385,36 @@ int main(int argc, char *argv[])
     texture_info te3 = texture_info(image[4].imageWidth, image[4].imageHeight);
     texCube.loadTexture3(GL_TEXTURE1, te3, image[4].imageData);
 
-    LoadTGAFile("CMaps/stormydays_ft.tga",&image[5]);
+    LoadTGAFile("CMaps/stormydays_rt.tga",&image[5]);
     texture_info te4 = texture_info(image[5].imageWidth, image[5].imageHeight);
     texCube.loadTexture4(GL_TEXTURE1, te4, image[5].imageData);
 
-    LoadTGAFile("CMaps/stormydays_bk.tga",&image[6]);
+    LoadTGAFile("CMaps/stormydays_lf.tga",&image[6]);
     texture_info te5 = texture_info(image[6].imageWidth, image[6].imageHeight);
     texCube.loadTexture5(GL_TEXTURE1, te5, image[6].imageData);
 
 
     w_state->textures.push_back(texCube);
 
+    // --------------------- For Projection Mapping --------------------- 
+
+    Texture2D texProj;
+
+    //LoadTGAFile("CMaps/dog.tga", &image[7]);
+    //LoadTGAFile("CMaps/UBClogo1.tga", &image[7]);
+    LoadTGAFile("CMaps/Leopard_fur.tga", &image[7]);
+    //LoadTGAFile("CMaps/repeat_Bg.tga", &image[7]);
+    texture_info te6 = texture_info(image[7].imageWidth, image[7].imageHeight);
+    texProj.loadTexture(GL_TEXTURE2, te6, image[7].imageData);
+    
+    w_state->textures.push_back(texProj);
+
+
+    // the load TGA function allocates memory that needs to be freed
     for (int i = 0; i < 8; i++) {
         delete [] image[i].imageData;
     }
+
     /*********************************************
      * SET GL STATE
      *********************************************/ 
@@ -385,6 +432,7 @@ int main(int argc, char *argv[])
      * CLEAN UP
      *********************************************/
     delete g_mesh;
+    delete cube_mesh;
     delete g_gem;
     delete g_axis;
 

@@ -9,11 +9,12 @@ out vec4 vPosition;
 uniform mat3 NormalMatrix;      // we keep a MV matrix without the translation component to apply to vectors
 uniform mat4 ProjectionMatrix;  // Projection Matrix
 uniform mat4 ModelViewMatrix;   // ModelView Matrix
+uniform vec3 cameraPosition;
 
 void main()
 {
-    vNormal     = normalize( NormalMatrix * Normal );
-    vPosition   = ModelViewMatrix * vec4(Position,1.0); // Get the position in eye coordinates
+    vNormal     = normalize( Normal );
+    vPosition   = vec4(Position-cameraPosition,1.0); 
 
-    gl_Position = ProjectionMatrix * ModelViewMatrix * vec4(Position, 1.0);
+    gl_Position = ProjectionMatrix  * ModelViewMatrix * vec4(Position, 1.0);
 }
