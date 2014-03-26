@@ -367,33 +367,83 @@ int main(int argc, char *argv[])
     w_state->textures.push_back(tex0);
 
     // --------------------- FOR CUBE MAPPING --------------------- 
-
-    TextureCubeMap texCube;
-    LoadTGAFile("CMaps/stormydays_ft.tga", &image[1]);
+     TextureCubeMap texCube;
+    LoadTGAFile("CMaps/Classroom/posx.tga", &image[1]);
     texture_info te0 = texture_info(image[1].imageWidth, image[1].imageHeight);
     texCube.loadTexture0(GL_TEXTURE1, te0, image[1].imageData);
 
-    LoadTGAFile("CMaps/stormydays_bk.tga",&image[2]);
+    LoadTGAFile("CMaps/Classroom/negx.tga",&image[2]);
     texture_info te1 = texture_info(image[2].imageWidth, image[2].imageHeight);
     texCube.loadTexture1(GL_TEXTURE1, te1, image[2].imageData);
 
-    LoadTGAFile("CMaps/stormydays_dn.tga",&image[3]);
+    LoadTGAFile("CMaps/Classroom/negy.tga",&image[3]);
     texture_info te2 = texture_info(image[3].imageWidth, image[3].imageHeight);
     texCube.loadTexture2(GL_TEXTURE1, te2, image[3].imageData);
 
-    LoadTGAFile("CMaps/stormydays_up.tga",&image[4]);
+    LoadTGAFile("CMaps/Classroom/posy.tga",&image[4]);
     texture_info te3 = texture_info(image[4].imageWidth, image[4].imageHeight);
     texCube.loadTexture3(GL_TEXTURE1, te3, image[4].imageData);
 
-    LoadTGAFile("CMaps/stormydays_rt.tga",&image[5]);
+    LoadTGAFile("CMaps/Classroom/posz.tga",&image[5]);
     texture_info te4 = texture_info(image[5].imageWidth, image[5].imageHeight);
     texCube.loadTexture4(GL_TEXTURE1, te4, image[5].imageData);
 
-    LoadTGAFile("CMaps/stormydays_lf.tga",&image[6]);
+    LoadTGAFile("CMaps/Classroom/negz.tga",&image[6]);
     texture_info te5 = texture_info(image[6].imageWidth, image[6].imageHeight);
     texCube.loadTexture5(GL_TEXTURE1, te5, image[6].imageData);
 
+    /*
+    TextureCubeMap texCube;
+    LoadTGAFile("CMaps/EDC/posx.tga", &image[1]);
+    texture_info te0 = texture_info(image[1].imageWidth, image[1].imageHeight);
+    texCube.loadTexture0(GL_TEXTURE1, te0, image[1].imageData);
 
+    LoadTGAFile("CMaps/EDC/negx.tga",&image[2]);
+    texture_info te1 = texture_info(image[2].imageWidth, image[2].imageHeight);
+    texCube.loadTexture1(GL_TEXTURE1, te1, image[2].imageData);
+
+    LoadTGAFile("CMaps/EDC/negy.tga",&image[3]);
+    texture_info te2 = texture_info(image[3].imageWidth, image[3].imageHeight);
+    texCube.loadTexture2(GL_TEXTURE1, te2, image[3].imageData);
+
+    LoadTGAFile("CMaps/EDC/posy.tga",&image[4]);
+    texture_info te3 = texture_info(image[4].imageWidth, image[4].imageHeight);
+    texCube.loadTexture3(GL_TEXTURE1, te3, image[4].imageData);
+
+    LoadTGAFile("CMaps/EDC/posz.tga",&image[5]);
+    texture_info te4 = texture_info(image[5].imageWidth, image[5].imageHeight);
+    texCube.loadTexture4(GL_TEXTURE1, te4, image[5].imageData);
+
+    LoadTGAFile("CMaps/EDC/negz.tga",&image[6]);
+    texture_info te5 = texture_info(image[6].imageWidth, image[6].imageHeight);
+    texCube.loadTexture5(GL_TEXTURE1, te5, image[6].imageData);
+    */
+    /*
+    TextureCubeMap texCube;
+    LoadTGAFile("CMaps/church/posx.tga", &image[1]);
+    texture_info te0 = texture_info(image[1].imageWidth, image[1].imageHeight);
+    texCube.loadTexture0(GL_TEXTURE1, te0, image[1].imageData);
+
+    LoadTGAFile("CMaps/church/negx.tga",&image[2]);
+    texture_info te1 = texture_info(image[2].imageWidth, image[2].imageHeight);
+    texCube.loadTexture1(GL_TEXTURE1, te1, image[2].imageData);
+
+    LoadTGAFile("CMaps/church/negy.tga",&image[3]);
+    texture_info te2 = texture_info(image[3].imageWidth, image[3].imageHeight);
+    texCube.loadTexture2(GL_TEXTURE1, te2, image[3].imageData);
+
+    LoadTGAFile("CMaps/church/posy.tga",&image[4]);
+    texture_info te3 = texture_info(image[4].imageWidth, image[4].imageHeight);
+    texCube.loadTexture3(GL_TEXTURE1, te3, image[4].imageData);
+
+    LoadTGAFile("CMaps/church/posz.tga",&image[5]);
+    texture_info te4 = texture_info(image[5].imageWidth, image[5].imageHeight);
+    texCube.loadTexture4(GL_TEXTURE1, te4, image[5].imageData);
+
+    LoadTGAFile("CMaps/church/negz.tga",&image[6]);
+    texture_info te5 = texture_info(image[6].imageWidth, image[6].imageHeight);
+    texCube.loadTexture5(GL_TEXTURE1, te5, image[6].imageData);
+    */
     w_state->textures.push_back(texCube);
 
     // --------------------- For Projection Mapping --------------------- 
