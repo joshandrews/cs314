@@ -367,7 +367,7 @@ int main(int argc, char *argv[])
     w_state->textures.push_back(tex0);
 
     // --------------------- FOR CUBE MAPPING --------------------- 
-     TextureCubeMap texCube;
+    TextureCubeMap texCube;
     LoadTGAFile("CMaps/Classroom/posx.tga", &image[1]);
     texture_info te0 = texture_info(image[1].imageWidth, image[1].imageHeight);
     texCube.loadTexture0(GL_TEXTURE1, te0, image[1].imageData);
